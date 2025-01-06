@@ -1,0 +1,2 @@
+[console_scripts]
+swaggen = swaggen.swaggen:cli
