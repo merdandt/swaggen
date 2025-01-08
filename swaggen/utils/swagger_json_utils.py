@@ -243,3 +243,49 @@ def remove_query_params_and_request_body(paths_data):
                 del operation_data['requestBody']
 
     return cleaned_paths
+
+def remove_responses_empty_methods_keep_queries(paths_data):
+    """
+    Takes an OpenAPI paths dictionary and returns a new version where:
+    - 'responses' are removed from each operation.
+    - HTTP methods without 'parameters' or 'requestBody' are removed.
+
+    Args:
+        paths_data (dict): The OpenAPI paths dictionary.
+
+    Returns:
+        dict: A new paths dictionary with 'responses' removed and empty methods excluded.
+    """
+    # Make a deep copy to ensure the original data remains unmodified
+    cleaned_paths = copy.deepcopy(paths_data)
+
+    paths_to_delete = []  # To keep track of paths that may become empty
+
+    for path, methods in cleaned_paths.items():
+        methods_to_delete = []  # To keep track of methods to remove within this path
+
+        for http_method, operation_data in methods.items():
+            # Remove 'responses' if it exists
+            if 'responses' in operation_data:
+                del operation_data['responses']
+
+            # Check if both 'parameters' and 'requestBody' are absent
+            has_parameters = 'parameters' in operation_data and bool(operation_data['parameters'])
+            has_request_body = 'requestBody' in operation_data and bool(operation_data['requestBody'])
+
+            if not has_parameters and not has_request_body:
+                methods_to_delete.append(http_method)
+
+        # Remove the identified methods
+        for method in methods_to_delete:
+            del methods[method]
+
+        # If after deletion, the path has no methods left, mark it for deletion
+        if not methods:
+            paths_to_delete.append(path)
+
+    # Optionally, remove paths that have no methods left
+    for path in paths_to_delete:
+        del cleaned_paths[path]
+
+    return cleaned_paths

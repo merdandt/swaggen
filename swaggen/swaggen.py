@@ -4,6 +4,7 @@ import swaggen.utils.swagger_json_utils as sju
 from swaggen.exception_creator.exception_creator import generate_error_types_enum
 from swaggen.gen_ai.gen_ai_handler  import GenerativeAITaskHandler
 from swaggen.model_creator.model_creator import create_dart_files
+import subprocess
 
 @click.group()
 @click.version_option(version='0.1.0')
@@ -48,10 +49,13 @@ def generate(url):
     paths_of_one = sju.get_paths_by_tag(cleaned_openapi_json, one)
     expanded_paths_of_one =sju.expand_paths_references(paths_of_one, cleaned_openapi_json)
     cleaned_query_paths_of_one = sju.remove_query_params_and_request_body(expanded_paths_of_one)
-    # generating
+    # generating models
     dart_models_raw=generative_ai_handler.generate_models(paths=cleaned_query_paths_of_one)
     create_dart_files(dart_classes_string=dart_models_raw, folder_name=one.lower())
-
+    # generating DTOs
+    cleaned_response_paths_of_one = sju.remove_responses_empty_methods_keep_queries(expanded_paths_of_one)
+    dart_dto_raw=generative_ai_handler.generate_DTOs(paths=cleaned_response_paths_of_one)
+    create_dart_files(dart_classes_string=dart_dto_raw, folder_name=one.lower())
 
 if __name__ == '__main__':
     cli()

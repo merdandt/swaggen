@@ -73,7 +73,7 @@ class GenerativeAITaskHandler:
             click.echo(f"Error generating models: {e}")
             raise RuntimeError(f"Error generating models: {e}")
         
-    def generate_DTOs(self,tag, paths, model_name="gemini-1.5-flash", temperature=0):
+    def generate_DTOs(self, paths, model_name="gemini-1.5-flash", temperature=0):
         """
         Generate DTOs based on the provided paths and current_models using the AI client.
         Args:
